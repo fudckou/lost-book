@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>失物之书 · 飞翔的荷兰人号</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+        body {
+            width:100vw; height:100vh; overflow:hidden;
+            background:#0a0e1a;
+            display:flex; justify-content:center; align-items:center;
+            font-family:'Georgia','Times New Roman',serif;
+            touch-action:manipulation;
+        }
+        #container {
+            position:relative; width:100%; height:100%;
+            max-width:480px; max-height:860px;
+            background:radial-gradient(ellipse at center,#1b2540 0%,#0a0e1a 100%);
+            overflow:hidden;
+            display:flex; justify-content:center; align-items:center;
+            cursor:pointer;
+        }
+        #bg-water {
+            position:absolute; bottom:0; left:0; width:100%; height:40%;
+            background:linear-gradient(180deg,transparent,rgba(10,30,60,0.6));
+            pointer-events:none; z-index:0;
+        }
+        #book-wrapper {
+            position:relative; z-index:1;
+            width:88%; max-width:400px;
+            aspect-ratio:0.72/1;
+            perspective:1600px;
+        }
+        #book {
+            position:relative; width:100%; height:100%;
+            transform-style:preserve-3d;
+            transition:transform 0.8s cubic-bezier(0.3,0.2,0.2,0.8);
+            transform:rotateY(0deg);
+            border-radius:4px 14px 14px 4px;
+        }
+        #book.flipped {
+            transform:rotateY(180deg);
+        }
+
+        /* 封面 */
+        #front {
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            border-radius:4px 14px 14px 4px;
+            background:linear-gradient(145deg,#4a3728,#2d1f14);
+            box-shadow:-10px 10px 40px rgba(0,0,0,0.9), inset -2px 0 30px rgba(0,0,0,0.3), inset 0 0 80px rgba(180,140,100,0.06);
+            backface-visibility:hidden;
+            display:flex; flex-direction:column; justify-content:center; align-items:center;
+            padding:20px;
+            border:2px solid #6a4f38;
+            z-index:2;
+        }
+        #front::before {
+            content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+            border-radius:4px 14px 14px 4px;
+            background-image:radial-gradient(ellipse at 30% 40%,rgba(200,170,130,0.05) 0%,transparent 60%),
+                repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);
+            pointer-events:none;
+        }
+        #front .corner {
+            position:absolute; width:26px; height:26px;
+            border:2px solid #b89870; opacity:0.5;
+        }
+        #front .corner-tl { top:10px; left:10px; border-right:none; border-bottom:none; }
+        #front .corner-tr { top:10px; right:10px; border-left:none; border-bottom:none; }
+        #front .corner-bl { bottom:10px; left:10px; border-right:none; border-top:none; }
+        #front .corner-br { bottom:10px; right:10px; border-left:none; border-top:none; }
+        #front .spine-line {
+            position:absolute; left:14px; top:15%; width:2px; height:70%;
+            background:linear-gradient(180deg,transparent,rgba(180,150,110,0.2),transparent);
+        }
+        #front .title {
+            font-size:2.6rem; font-weight:bold; color:#d4b48a;
+            text-shadow:0 0 40px rgba(180,150,110,0.15),0 2px 4px rgba(0,0,0,0.8);
+            letter-spacing:14px; font-family:'Georgia',serif;
+            margin-bottom:4px; text-align:center;
+        }
+        #front .subtitle {
+            font-size:0.75rem; color:#8a7a6a; letter-spacing:6px;
+            text-shadow:0 1px 3px rgba(0,0,0,0.6); font-style:italic;
+            border-top:1px solid rgba(180,150,110,0.15);
+            padding-top:12px; margin-top:4px;
+        }
+        #front .ornament {
+            font-size:3.2rem; color:rgba(180,150,110,0.2);
+            margin:6px 0; letter-spacing:16px;
+        }
+        #front .hint {
+            position:absolute; bottom:22px; left:0; width:100%; text-align:center;
+            font-size:0.65rem; color:rgba(180,170,160,0.25);
+            letter-spacing:2px; animation:pulseHint 3s infinite;
+        }
+        @keyframes pulseHint { 0%,100%{opacity:0.15;} 50%{opacity:0.6;} }
+
+        /* 背面（内页） */
+        #back {
+            position:absolute; top:0; left:0; width:100%; height:100%;
+            border-radius:4px 14px 14px 4px;
+            background:linear-gradient(170deg,#f5ede0,#e8dcc8);
+            box-shadow:inset 0 0 60px rgba(160,130,100,0.15);
+            backface-visibility:hidden;
+            transform:rotateY(180deg);
+            display:flex; flex-direction:column; justify-content:center; align-items:center;
+            padding:24px 18px;
+            border:1px solid #c8b898;
+            overflow:hidden;
+        }
+        #back::before {
+            content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+            border-radius:4px 14px 14px 4px;
+            background-image:radial-gradient(ellipse at 20% 30%,rgba(200,170,130,0.08) 0%,transparent 50%),
+                repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(180,160,130,0.03) 3px,rgba(180,160,130,0.03) 4px);
+            pointer-events:none;
+        }
+        #back .icon {
+            font-size:2.8rem; margin-bottom:12px; opacity:0.5;
+            transition:transform 0.3s;
+        }
+        #back .answer {
+            font-size:1.3rem; line-height:1.9; color:#2d241a;
+            text-align:center; font-family:'Georgia',serif;
+            font-weight:normal; letter-spacing:0.5px;
+            padding:0 6px; text-shadow:0 1px 2px rgba(255,255,255,0.5);
+            transition:opacity 0.25s, transform 0.3s;
+        }
+        #back .page-number {
+            position:absolute; bottom:16px; right:22px;
+            font-size:0.65rem; color:#b0a090;
+            letter-spacing:2px; font-style:italic;
+        }
+        #back::after {
+            content:''; position:absolute; bottom:0; left:0; width:100%; height:6px;
+            background:linear-gradient(0deg,#4a3728,transparent);
+            border-radius:0 0 4px 14px; opacity:0.3;
+        }
+
+        /* 翻页动画（内容闪烁翻页效果） */
+        #back.flip .icon { animation:iconFlip 0.4s ease; }
+        #back.flip .answer { animation:textFlip 0.5s ease; }
+        @keyframes iconFlip {
+            0% { transform:scale(1) rotate(0deg); opacity:0.5; }
+            40% { transform:scale(1.3) rotate(-10deg); opacity:0.2; }
+            100% { transform:scale(1) rotate(0deg); opacity:0.5; }
+        }
+        @keyframes textFlip {
+            0% { opacity:0; transform:translateY(10px) scale(0.95); }
+            60% { opacity:0; transform:translateY(-5px) scale(0.98); }
+            100% { opacity:1; transform:translateY(0) scale(1); }
+        }
+
+        /* 彩蛋浮动文字 */
+        #egg-float {
+            position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%) scale(0.8);
+            z-index:20;
+            color:#d4c4b0;
+            font-size:1.4rem; font-family:'Georgia',serif; font-style:italic;
+            letter-spacing:2px;
+            text-shadow:0 0 60px rgba(180,150,110,0.3),0 4px 20px rgba(0,0,0,0.6);
+            text-align:center;
+            padding:20px 30px;
+            background:rgba(10,14,26,0.5);
+            backdrop-filter:blur(6px);
+            border-radius:8px;
+            border:1px solid rgba(180,150,110,0.2);
+            opacity:0; pointer-events:none;
+            transition:opacity 1s ease, transform 1s ease;
+            width:80%; max-width:300px; line-height:1.6;
+        }
+        #egg-float.show {
+            opacity:1; transform:translate(-50%,-50%) scale(1);
+            pointer-events:auto;
+        }
+        #egg-float .sub {
+            display:block; font-size:0.7rem; color:#6a5a4a;
+            margin-top:12px; letter-spacing:4px; font-style:normal;
+        }
+
+        #status {
+            position:absolute; bottom:24px; left:0; width:100%; text-align:center;
+            z-index:5; font-size:0.6rem; color:rgba(180,170,160,0.2);
+            letter-spacing:3px; pointer-events:none;
+        }
+        #status span {
+            background:rgba(10,14,26,0.3);
+            padding:4px 14px; border-radius:20px;
+            backdrop-filter:blur(2px);
+        }
+
+        @media (max-width:380px) {
+            #book-wrapper { max-width:300px; }
+            #front .title { font-size:2rem; letter-spacing:10px; }
+            #back .answer { font-size:1.1rem; }
+            #egg-float { font-size:1.1rem; width:85%; }
+        }
+        @media (orientation:landscape) and (max-height:500px) {
+            #book-wrapper { max-width:220px; }
+            #front .title { font-size:1.6rem; letter-spacing:6px; }
+            #back .answer { font-size:0.95rem; }
+            #back .icon { font-size:2rem; }
+            #egg-float { font-size:1rem; width:70%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div id="bg-water"></div>
+    <div id="book-wrapper">
+        <div id="book">
+            <!-- 封面 -->
+            <div id="front">
+                <div class="corner corner-tl"></div>
+                <div class="corner corner-tr"></div>
+                <div class="corner corner-bl"></div>
+                <div class="corner corner-br"></div>
+                <div class="spine-line"></div>
+                <div class="ornament">⚓</div>
+                <div class="title">失物之书</div>
+                <div class="subtitle">— 寻回遗失之物 —</div>
+                <div class="hint">✦ 轻触书封 ✦</div>
+            </div>
+            <!-- 内页（背面） -->
+            <div id="back">
+                <div class="icon" id="answer-icon">⛵</div>
+                <div class="answer" id="answer-text">深渊在凝视你</div>
+                <div class="page-number" id="page-num">— 第 ? 页 —</div>
+            </div>
+        </div>
+    </div>
+    <!-- 彩蛋浮动 -->
+    <div id="egg-float">
+        <span id="egg-text">潮水带走了这一页</span>
+        <span class="sub">✦ 书已合 ✦</span>
+    </div>
+    <div id="status"><span id="status-text">沉睡于深海</span></div>
+</div>
+
+<script>
+    // ===== 数据 =====
+    const ANSWERS = [
+        "浓雾终将散开，但别急。","扬起你的主帆，风会来。","深渊正在注视着你，别回头。",
+        "等待满月之夜，那时门会打开。","你的心脏还在跳动，虽然它已冰冷。",
+        "转向逆风的方向，那里有出口。","旧日的锁链，无法被海水冲断。",
+        "真正的宝藏，就藏在你脚下。","灯塔已经熄灭，你要自己发光。",
+        "抛下你的锚，就在这里停泊。","海浪会替你回答所有问题。",
+        "今夜，你可以靠岸，但只此一次。","你的船员尚未安息，你再等等。",
+        "罗盘指向的不是北方，是你自己。","风暴是你唯一忠实的朋友。",
+        "那片海域没有名字，正如你的命运。","你早已知道答案，何须问我。",
+        "挥剑斩断过去，或者斩断自己。","把心脏装回胸膛，还来得及。",
+        "继续航行，千万别回头。","深渊之眼已经睁开了。",
+        "收起你的悲伤，那是累赘。","这是永恒的契约，不可违背。",
+        "听，船钟在响，那是倒计时。","前方有暗礁，但也是屏障。",
+        "相信那只海鸥，它是信使。","你背负着所有灵魂的重量。",
+        "忘掉故乡的港口，你回不去了。","现在，开始划桨，别停。",
+        "海面下藏着你遗忘的秘密。","你的命运早已写在水面上。",
+        "旋转舵轮，往左打满。","火光会指引你，但那是鬼火。",
+        "吞下那颗蓝色的珠子，别怕。","要么沉没，要么就此重生。",
+        "黎明前的那刻最黑暗。","你在寻找的，也在深渊里寻找你。",
+        "向海神放下一枚金币。","敬所有船员一杯朗姆酒。",
+        "旧海图上没有这条路。","你的名字，早已刻在龙骨上。",
+        "不要相信过于平静的海面。","风停了，就耐心等风来。",
+        "孤独是你唯一的战利品。","船灵正在甲板下低语。",
+        "往正北走三海里，仔细看。","那里有一扇沉没的大门。",
+        "锁上它，或者勇敢地打开它。","你的恐惧，正是船帆的动力。",
+        "千万别触碰那根生锈的锁链。","深渊正在回应你的呼唤。",
+        "放下复仇的念头，那是毒药。","去寻找那只会说话的海蛇。",
+        "你的影子，正挂在船尾晾干。","立即改道，避开那片漩涡。",
+        "答案写在浪花的泡沫里。","举起你的佩剑，向黑暗宣誓。",
+        "号角已经吹响，该行动了。","这不是终点，只是换了个方向。",
+        "海水已经浸透了你的骨骼。","但你依然活着，这就够了。",
+        "触碰那盏摇曳的灯笼。","它会照亮漆黑的水底。",
+        "你丢失了一半的灵魂。","另一半，被留在了岸上。",
+        "随便选一个方向，都是对的。","诅咒的力量正在慢慢减弱。",
+        "除非你现在就选择回头。","今日适合向海神献祭。",
+        "把那枚银币投入海中。","雾里有声音在叫你名字。",
+        "千万别轻易回应它。","那是海妖的诡计，别上当。",
+        "闭上眼，看看你的内心。","那里的海面永远平静如镜。",
+        "你的船员们已经原谅了你。","烧掉那张泛黄的羊皮纸。",
+        "灰烬中会浮现真正的真相。","潮汐将在午夜时分转向。",
+        "准备好你的缆绳。","这一次，真的可以靠岸了。",
+        "除非这只是一场漫长的梦。","检查你的罗盘，它在疯狂旋转。",
+        "你正处在风暴的正中心。","这是整个海域最安全的地方。",
+        "等待黎明的第一声号角。","你的心脏就在左舷水底。",
+        "潜下去，它就在那里等你。","水很深，但你必须敢。",
+        "你是一位好船长。","船员们不会承认，但这是真的。",
+        "带着这份荣耀继续航行。","或者带着所有秘密沉下去。",
+        "今晚的月亮正在看着你。","她在为你悄悄指引方向。",
+        "这就是命运给你的答案。","你的船，其实早已靠岸了。",
+        "但这趟伟大的旅程，才刚刚开始。","倾听海水的声音，那即是真理。",
+        "飞翔的荷兰人号，永远与你同在。"
+    ];
+    const ICONS = ['⛵','🗺️','🧭','⚓','🏴‍☠️','🔱','🐚','🌊','📜','🌙','⭐','🕯️'];
+    const EGG_MESSAGES = [
+        "有些宝藏，不在今日。","潮水带走了这一页。","风停了，书也倦了。",
+        "浪花抹去了字迹。","海雾太重，看不清了。","月亮藏进了云里。",
+        "你找的，或许在下一片海域。","不是每颗星辰都在今夜坠落。",
+        "深渊说：你已问得够多了。","真正的答案，从不在翻开的这一页。",
+        "你翻得越快，它藏得越深。","松开手，它自然会浮上来。",
+        "有时候，找不到才是对的。","别急。海很大，书也很厚。",
+        "它在你背后，你一直没回头。","书页在呼吸，你听见了吗？",
+        "它认得你。它在躲你。","你还没准备好看见它。",
+        "这一页是空白的。等你来写。","船在等你。书也在等你。"
+    ];
+
+    // ===== 音效 =====
+    let audioCtx = null;
+    function getAudioCtx() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+    function playPageSound() {
+        try {
+            const ctx = getAudioCtx();
+            const size = ctx.sampleRate * 0.10;
+            const buf = ctx.createBuffer(1, size, ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for(let i=0; i<size; i++) {
+                const t = i/size;
+                d[i] = (Math.random()*2-1)*(1-t)*0.12 + Math.sin(i*0.008)*(1-t)*0.03;
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            const gain = ctx.createGain();
+            gain.gain.value = 0.35;
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.10);
+            src.connect(gain); gain.connect(ctx.destination);
+            src.start(ctx.currentTime);
+        } catch(_) {}
+    }
+    function playCloseSound() {
+        try {
+            const ctx = getAudioCtx();
+            const size = ctx.sampleRate * 0.25;
+            const buf = ctx.createBuffer(1, size, ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for(let i=0; i<size; i++) {
+                const t = i/size;
+                const decay = Math.exp(-t*6);
+                d[i] = (Math.random()*2-1)*decay*0.25 + Math.sin(i*0.02)*decay*0.08 + Math.sin(i*0.05+0.5)*decay*0.05;
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            const gain = ctx.createGain();
+            gain.gain.value = 0.5;
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.25);
+            src.connect(gain); gain.connect(ctx.destination);
+            src.start(ctx.currentTime);
+        } catch(_) {}
+    }
+
+    // ===== DOM =====
+    const book = document.getElementById('book');
+    const back = document.getElementById('back');
+    const answerText = document.getElementById('answer-text');
+    const answerIcon = document.getElementById('answer-icon');
+    const pageNum = document.getElementById('page-num');
+    const eggFloat = document.getElementById('egg-float');
+    const eggText = document.getElementById('egg-text');
+    const statusText = document.getElementById('status-text');
+    const frontHint = document.querySelector('#front .hint');
+
+    // ===== 状态 =====
+    let isFlipping = false;
+    let isBookOpen = false;          // true 表示已翻开（显示内页）
+    let flipCount = 0;
+    let eggTriggerAt = Math.floor(Math.random() * 6) + 5;
+    let isEggActive = false;
+
+    // ===== 工具 =====
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function getAnswer() { return rand(ANSWERS); }
+    function getIcon() { return rand(ICONS); }
+    function getPage() { return Math.floor(Math.random() * 300) + 1; }
+    function getEgg() { return rand(EGG_MESSAGES); }
+
+    // 更新内页内容（不触发翻页动画）
+    function updateBackContent() {
+        answerText.textContent = getAnswer();
+        answerIcon.textContent = getIcon();
+        pageNum.textContent = `— 第 ${getPage()} 页 —`;
+    }
+
+    // 刷新内页（带翻页动画）
+    function refreshPage() {
+        if (isFlipping || isEggActive) return;
+        isFlipping = true;
+
+        // 检查彩蛋
+        if (flipCount >= eggTriggerAt) {
+            triggerEgg();
+            return;
+        }
+
+        playPageSound();
+
+        // 移除旧动画类，强制回流，然后添加新动画类
+        back.classList.remove('flip');
+        void back.offsetHeight; // 强制回流
+        // 更新内容
+        updateBackContent();
+        // 添加动画类
+        back.classList.add('flip');
+
+        flipCount++;
+        statusText.textContent = `✦ 第 ${flipCount} 页 ✦`;
+
+        // 动画结束后解锁
+        setTimeout(() => {
+            back.classList.remove('flip');
+            isFlipping = false;
+        }, 500);
+    }
+
+    // 首次翻开书本（从封面到内页）
+    function openBook() {
+        if (isFlipping || isEggActive) return;
+        isFlipping = true;
+        playPageSound();
+
+        // 翻转书本（显示背面）
+        book.classList.add('flipped');
+        // 更新内容
+        updateBackContent();
+        // 添加翻页动画
+        back.classList.add('flip');
+        setTimeout(() => {
+            back.classList.remove('flip');
+        }, 400);
+
+        isBookOpen = true;
+        flipCount = 1;
+        statusText.textContent = `✦ 第 ${flipCount} 页 ✦`;
+        frontHint.textContent = '✦ 翻页继续 ✦';
+
+        setTimeout(() => {
+            isFlipping = false;
+        }, 500);
+    }
+
+    // 触发彩蛋
+    function triggerEgg() {
+        if (isEggActive) return;
+        isEggActive = true;
+        playCloseSound();
+
+        // 合上书本（回到封面）
+        book.classList.remove('flipped');
+        isBookOpen = false;
+        frontHint.textContent = '✦ 潮退后再来 ✦';
+        statusText.textContent = '🌊 书已合';
+
+        // 显示浮动文字
+        eggText.textContent = getEgg();
+        eggFloat.classList.add('show');
+
+        // 重置计数
+        flipCount = 0;
+        eggTriggerAt = Math.floor(Math.random() * 6) + 5;
+
+        // 点击浮动文字关闭它并回到封面
+        eggFloat.onclick = function(e) {
+            e.stopPropagation();
+            eggFloat.classList.remove('show');
+            isEggActive = false;
+            frontHint.textContent = '✦ 轻触书封 ✦';
+            statusText.textContent = '沉睡于深海';
+            // 预备内容（但还没翻开）
+            updateBackContent();
+        };
+    }
+
+    // ===== 主点击事件 =====
+    document.getElementById('container').addEventListener('click', function(e) {
+        if (e.target.closest('#egg-float')) return;
+        if (isEggActive) return;
+
+        if (!isBookOpen) {
+            // 封面状态 → 翻开
+            openBook();
+        } else {
+            // 已翻开 → 翻下一页
+            refreshPage();
+        }
+    });
+
+    // ===== 初始化 =====
+    updateBackContent();
+    console.log('📖 失物之书已加载');
+    console.log(`🎯 彩蛋将在第 ${eggTriggerAt} 次翻开时触发`);
+</script>
+</body>
+</html>
