@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>失物之书 · 飞翔的荷兰人号</title>
     <style>
-        /* ===== 样式不变（与上版完全一致，复制即可） ===== */
+        /* ===== 样式 ===== */
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
         body {
             width:100vw; height:100vh; overflow:hidden;
@@ -42,7 +42,6 @@
             border-radius:4px 14px 14px 4px;
         }
         #book.flipped { transform:rotateY(180deg); }
-
         #front {
             position:absolute; top:0; left:0; width:100%; height:100%;
             border-radius:4px 14px 14px 4px;
@@ -95,7 +94,17 @@
             letter-spacing:2px; animation:pulseHint 3s infinite;
         }
         @keyframes pulseHint { 0%,100%{opacity:0.15;} 50%{opacity:0.6;} }
-
+        /* 版本号 */
+        #version {
+            position: absolute;
+            bottom: 62px;
+            right: 16px;
+            font-size: 0.55rem;
+            color: rgba(180,170,160,0.2);
+            letter-spacing: 1px;
+            pointer-events: none;
+            z-index: 3;
+        }
         #back {
             position:absolute; top:0; left:0; width:100%; height:100%;
             border-radius:4px 14px 14px 4px;
@@ -145,7 +154,6 @@
             background:linear-gradient(0deg,#4a3728,transparent);
             border-radius:0 0 4px 14px; opacity:0.3;
         }
-
         #back.flip .icon {
             animation: iconFlip 0.5s ease forwards;
         }
@@ -162,7 +170,6 @@
             70%  { opacity: 0.5; transform: translateY(-5px) scale(1.02); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         #egg-float {
             position:absolute; top:50%; left:50%;
             transform:translate(-50%,-50%) scale(0.9);
@@ -184,7 +191,6 @@
             display:block; font-size:0.7rem; color:#6a5a4a;
             margin-top:12px; letter-spacing:4px; font-style:normal;
         }
-
         #status {
             position:absolute; bottom:24px; left:0; width:100%; text-align:center;
             z-index:5; font-size:0.6rem; color:rgba(180,170,160,0.2);
@@ -195,7 +201,6 @@
             padding:4px 14px; border-radius:20px;
             backdrop-filter:blur(2px);
         }
-
         #voice-overlay {
             position: absolute;
             top: 0; left: 0;
@@ -216,7 +221,6 @@
             to { opacity: 1; transform: scale(1); }
         }
         #voice-overlay.show { display: flex; }
-
         #voice-overlay .title {
             color: #d4c4b0;
             font-size: 1.6rem;
@@ -334,8 +338,6 @@
             color: rgba(180,170,160,0.7);
             transform: rotate(90deg);
         }
-
-        /* 加载提示 */
         #loading-ai {
             position: absolute;
             top: 0; left: 0;
@@ -368,13 +370,13 @@
             font-style: italic;
             animation: pulseHint 2s infinite;
         }
-
         @media (max-width:380px) {
             #book-wrapper { max-width:300px; }
             #front .title { font-size:2rem; letter-spacing:10px; }
             #back .answer { font-size:1.1rem; }
             #back .icon { font-size:2.2rem; }
             #egg-float { font-size:1.1rem; width:85%; }
+            #version { font-size:0.5rem; bottom:52px; right:12px; }
         }
         @media (orientation:landscape) and (max-height:500px) {
             #book-wrapper { max-width:220px; }
@@ -382,6 +384,7 @@
             #back .answer { font-size:0.95rem; }
             #back .icon { font-size:2rem; }
             #egg-float { font-size:1rem; width:70%; }
+            #version { font-size:0.45rem; bottom:40px; right:10px; }
         }
     </style>
 </head>
@@ -401,6 +404,8 @@
                 <div class="title">失物之书</div>
                 <div class="subtitle">— 寻回遗失之物 —</div>
                 <div class="hint">✦ 轻触书封，倾诉心声 ✦</div>
+                <!-- 版本号 -->
+                <div id="version">v2.0.1</div>
             </div>
             <div id="back">
                 <div class="icon" id="answer-icon">⛵</div>
@@ -415,13 +420,11 @@
     </div>
     <div id="status"><span id="status-text">沉睡于深海</span></div>
 
-    <!-- AI 加载提示 -->
     <div id="loading-ai">
         <div class="spinner"></div>
         <div class="text">🌊 命运正在苏醒...</div>
     </div>
 
-    <!-- 心声覆盖层 -->
     <div id="voice-overlay">
         <button class="voice-close" id="voice-close">✕</button>
         <div class="title">🌊 向大海倾诉</div>
@@ -446,7 +449,12 @@
 </script>
 <script type="module">
     // ================================================================
-    //  1. 数据（原始100 + 隐喻20 + 新增20 = 140条）
+    //  版本号（修改这里即可更新）
+    // ================================================================
+    const APP_VERSION = 'v2.0.1';
+
+    // ================================================================
+    //  数据（140条答案）
     // ================================================================
     const BASE_ANSWERS = [
         "浓雾终将散开，但别急。","扬起你的主帆，风会来。","深渊正在注视着你，别回头。",
@@ -502,46 +510,25 @@
     ];
 
     const METAPHOR_ANSWERS = [
-        "今晚就此靠岸吧。",
-        "把锚抛向星光最暗的地方。",
-        "海风会替你关掉多余的帆。",
-        "你已在港湾的视线里。",
-        "浪声说，可以了。",
-        "收起罗盘，它转得太久了。",
-        "信风会在你醒来时敲门。",
-        "船底有最轻柔的夜。",
-        "不必再数桅杆上的灯。",
-        "潮水会带走这一程的痕迹。",
-        "你坐的位置，正好被月亮照着。",
-        "该让舵轮自己转一圈了。",
-        "雾里有灯，灯下有岸。",
-        "顺流而下，也是向前。",
-        "把灯笼挂在船尾，它会替你照亮来路。",
-        "有些浪，是用来停的。",
-        "天黑后，海就是你的枕头。",
-        "锁链已经自己解开了。",
-        "你需要的只是甲板上的一次呼吸。",
-        "今夜，船不走了。"
+        "今晚就此靠岸吧。","把锚抛向星光最暗的地方。","海风会替你关掉多余的帆。",
+        "你已在港湾的视线里。","浪声说，可以了。","收起罗盘，它转得太久了。",
+        "信风会在你醒来时敲门。","船底有最轻柔的夜。","不必再数桅杆上的灯。",
+        "潮水会带走这一程的痕迹。","你坐的位置，正好被月亮照着。",
+        "该让舵轮自己转一圈了。","雾里有灯，灯下有岸。","顺流而下，也是向前。",
+        "把灯笼挂在船尾，它会替你照亮来路。","有些浪，是用来停的。",
+        "天黑后，海就是你的枕头。","锁链已经自己解开了。",
+        "你需要的只是甲板上的一次呼吸。","今夜，船不走了。"
     ];
 
     const NEW_METAPHOR = [
-        "让海风把锁链吹成铃铛。",
-        "你的船桨该浸入另一片月光了。",
-        "桅杆上的绳结正自己松开。",
-        "潮声会替你回应那些未说出口的话。",
-        "你站的位置，恰好避开了所有暗流。",
-        "天边那朵云，是风留给你的便签。",
-        "海浪替你翻过不该停在这一页。",
-        "船底有光，是旧日你遗忘的锚。",
-        "顺着月光的方向走，别回头。",
-        "沉默也是一种航速，不丢人。",
-        "你的航线从未断过，只是太弯了。",
-        "今夜，你不必擦干脸上的水痕。",
-        "舵轮在你手里，它不急。",
-        "风会绕道，但不会遗忘你。",
-        "所有沉入海底的，都会变成贝壳。",
-        "你正航行在无人打扰的深蓝里。",
-        "锁链已锈，你该转身了。",
+        "让海风把锁链吹成铃铛。","你的船桨该浸入另一片月光了。","桅杆上的绳结正自己松开。",
+        "潮声会替你回应那些未说出口的话。","你站的位置，恰好避开了所有暗流。",
+        "天边那朵云，是风留给你的便签。","海浪替你翻过不该停在这一页。",
+        "船底有光，是旧日你遗忘的锚。","顺着月光的方向走，别回头。",
+        "沉默也是一种航速，不丢人。","你的航线从未断过，只是太弯了。",
+        "今夜，你不必擦干脸上的水痕。","舵轮在你手里，它不急。",
+        "风会绕道，但不会遗忘你。","所有沉入海底的，都会变成贝壳。",
+        "你正航行在无人打扰的深蓝里。","锁链已锈，你该转身了。",
         "海鸥停在你桅杆上，它替你看见了明日的太阳。",
         "你并非迷失，你只是在走一条更弯的航路。",
         "浪潮会替你重写所有未完成的句子。"
@@ -562,7 +549,119 @@
     ];
 
     // ================================================================
-    //  2. DOM
+    //  同义词引擎（备用降级）
+    // ================================================================
+    const SYNONYM_MAP = {
+        "累": ["累","疲惫","疲倦","倦怠","劳累","疲乏","困乏","力竭","乏力","透支"],
+        "疲倦": ["累","疲惫","疲倦","倦怠","劳累","疲乏","困乏"],
+        "疲惫": ["累","疲惫","疲倦","倦怠","劳累","疲乏","困乏"],
+        "倦": ["累","疲惫","疲倦","倦怠","劳累","疲乏"],
+        "烦": ["烦","烦躁","烦恼","焦虑","不安","心乱","急躁","苦闷"],
+        "烦躁": ["烦","烦躁","烦恼","焦虑","不安","心乱","急躁"],
+        "焦虑": ["烦","烦躁","焦虑","不安","心乱","紧张"],
+        "孤独": ["孤独","孤单","寂寞","寂寥","落寞","孤寂","独处"],
+        "寂寞": ["孤独","孤单","寂寞","寂寥","落寞","孤寂"],
+        "伤心": ["伤心","难过","悲伤","悲痛","哀伤","心碎","痛心","伤感"],
+        "难过": ["伤心","难过","悲伤","悲痛","哀伤","心碎","伤感"],
+        "悲伤": ["伤心","难过","悲伤","悲痛","哀伤","心碎","伤感"],
+        "迷茫": ["迷茫","困惑","茫然","彷徨","迷失","无措","不知"],
+        "困惑": ["迷茫","困惑","茫然","彷徨","迷失","无措"],
+        "压力": ["压力","重负","负担","压抑","沉重","紧绷"],
+        "空": ["空","空虚","空洞","虚无","茫然","失落"],
+        "空虚": ["空","空虚","空洞","虚无","茫然","失落"],
+        "麻木": ["麻木","迟钝","无感","冷淡","失感"],
+        "绝望": ["绝望","无望","灰心","丧气","无力","放弃"],
+        "无助": ["无助","无力","孤立","无援","软弱"],
+        "念": ["念","思念","怀念","牵挂","想","惦记"],
+        "想": ["念","思念","怀念","牵挂","想","惦记"],
+        "爱": ["爱","喜爱","热爱","眷恋","深情","真心"],
+        "希望": ["希望","期盼","期待","盼望","渴望","愿望"],
+        "路": ["路","方向","前程","归途","去路","前路"],
+        "自由": ["自由","洒脱","无拘","自在","逍遥"],
+        "归": ["归","归属","归途","回家","靠岸","归宿"],
+        "等": ["等","等待","等候","期盼","守望","静候"],
+        "放": ["放","放下","舍弃","释怀","放手","解脱"],
+        "静": ["静","安静","平静","安宁","静谧","沉静"],
+        "敢": ["敢","勇气","勇敢","无畏","胆量","果断"],
+        "坚持": ["坚持","坚守","执着","固守","持久","不懈"],
+        "变": ["变","改变","转变","变迁","转折","改变"],
+        "开始": ["开始","开端","启程","出发","新章","启航"],
+        "结束": ["结束","完结","了结","终章","收场","落幕"],
+        "旧": ["旧","过去","往昔","曾经","往日","旧日"],
+        "新": ["新","未来","新生","新程","明日","前方"],
+        "选": ["选","选择","抉择","决断","判断","定夺"],
+        "信": ["信","信任","相信","信赖","诚意","托付"],
+        "怕": ["怕","恐惧","害怕","畏惧","恐慌","胆怯"],
+        "怒": ["怒","愤怒","恼怒","愤懑","不平","火大"],
+        "委屈": ["委屈","憋屈","冤枉","不平","窝火","难受"],
+        "憾": ["憾","遗憾","惋惜","怅然","失落","缺"],
+        "释": ["释","释然","解脱","宽心","放松","豁达"]
+    };
+
+    function tokenizeAndExpand(text) {
+        const segmenter = new Intl.Segmenter('zh-CN', { granularity: 'word' });
+        const rawWords = [];
+        for (let seg of segmenter.segment(text)) {
+            if (seg.isWordLike) rawWords.push(seg.segment.trim());
+        }
+        const expanded = [];
+        for (let w of rawWords) {
+            expanded.push(w);
+            if (SYNONYM_MAP[w]) {
+                expanded.push(...SYNONYM_MAP[w]);
+            }
+        }
+        return expanded;
+    }
+
+    function getFreqFromWords(words) {
+        const freq = {};
+        words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+        return freq;
+    }
+
+    function cosineSimilarity(freq1, freq2) {
+        const keys = new Set([...Object.keys(freq1), ...Object.keys(freq2)]);
+        let dot = 0, norm1 = 0, norm2 = 0;
+        for (let key of keys) {
+            const v1 = freq1[key] || 0;
+            const v2 = freq2[key] || 0;
+            dot += v1 * v2;
+            norm1 += v1 * v1;
+            norm2 += v2 * v2;
+        }
+        if (norm1 === 0 || norm2 === 0) return 0;
+        return dot / (Math.sqrt(norm1) * Math.sqrt(norm2));
+    }
+
+    function getSynonymSortedIndices(query) {
+        const expandedWords = tokenizeAndExpand(query);
+        const userFreq = getFreqFromWords(expandedWords);
+        if (expandedWords.length === 0) {
+            return ANSWERS.map((_, i) => i).sort(() => Math.random() - 0.5);
+        }
+        const scores = ANSWERS.map((text, i) => {
+            const words = [];
+            const seg = new Intl.Segmenter('zh-CN', { granularity: 'word' });
+            for (let s of seg.segment(text)) {
+                if (s.isWordLike) words.push(s.segment.trim());
+            }
+            const freq = {};
+            words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
+            const score = cosineSimilarity(userFreq, freq);
+            return { index: i, score };
+        });
+        scores.sort((a, b) => b.score - a.score);
+        if (scores[0].score < 0.02) {
+            const metaphorIndices = ANSWERS.map((_, i) => i).filter(i => i >= 100);
+            const rest = scores.filter(s => s.index < 100).map(s => s.index);
+            return [...metaphorIndices, ...rest];
+        }
+        return scores.map(s => s.index);
+    }
+
+    // ================================================================
+    //  DOM
     // ================================================================
     const book = document.getElementById('book');
     const back = document.getElementById('back');
@@ -582,7 +681,7 @@
     const loadingAI = document.getElementById('loading-ai');
 
     // ================================================================
-    //  3. 状态
+    //  状态
     // ================================================================
     const state = {
         isFlipping: false,
@@ -600,14 +699,12 @@
         eggTriggerThreshold: 5,
         recognition: null,
         isListening: false,
-        // AI 相关
         aiReady: false,
-        embedder: null,
-        answerEmbeddings: null,
+        aiLoadingFinished: false,
     };
 
     // ================================================================
-    //  4. 音效
+    //  音效
     // ================================================================
     let audioCtx = null;
     function getAudioCtx() {
@@ -657,7 +754,7 @@
     }
 
     // ================================================================
-    //  5. 工具
+    //  工具
     // ================================================================
     function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
     function getRandomEgg() { return rand(EGG_MESSAGES); }
@@ -684,9 +781,8 @@
     }
 
     // ================================================================
-    //  6. AI 匹配引擎（使用 Transformers.js）
+    //  AI 加载与匹配
     // ================================================================
-
     let pipeline = null;
 
     async function loadAI() {
@@ -695,38 +791,32 @@
             const { pipeline: pipelineFn } = await import('@xenova/transformers');
             pipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
             // 预计算所有答案的向量
-            const start = performance.now();
             const embeddings = [];
             for (let i = 0; i < ANSWERS.length; i++) {
                 const result = await pipeline(ANSWERS[i], { pooling: 'mean', normalize: true });
                 embeddings.push(result.data);
-                // 每10条更新一次进度
                 if (i % 10 === 0) {
                     loadingAI.querySelector('.text').textContent = `🌊 命运正在苏醒... ${Math.round((i / ANSWERS.length) * 100)}%`;
                 }
             }
             state.answerEmbeddings = embeddings;
-            const elapsed = ((performance.now() - start) / 1000).toFixed(1);
-            console.log(`✅ AI 模型加载完成 (${ANSWERS.length} 条答案, ${elapsed}s)`);
             state.aiReady = true;
             loadingAI.classList.remove('show');
+            console.log('✅ AI 已就绪');
             return true;
         } catch (err) {
             console.error('AI 加载失败:', err);
-            loadingAI.querySelector('.text').textContent = '⚠️ 命运暂时沉睡，使用备用方式...';
+            loadingAI.querySelector('.text').textContent = '⚠️ 命运沉睡，使用备用引擎...';
             setTimeout(() => { loadingAI.classList.remove('show'); }, 1500);
             return false;
         }
     }
 
-    // 计算用户输入与所有答案的相似度，返回排序后的索引
     async function getAISortedIndices(query) {
         if (!state.aiReady || !pipeline) {
-            // 降级：随机打乱
-            const indices = ANSWERS.map((_, i) => i);
-            return indices.sort(() => Math.random() - 0.5);
+            // 降级到同义词匹配
+            return getSynonymSortedIndices(query);
         }
-
         try {
             const result = await pipeline(query, { pooling: 'mean', normalize: true });
             const queryEmbedding = result.data;
@@ -740,26 +830,21 @@
                 scores.push({ index: i, score: dot });
             }
             scores.sort((a, b) => b.score - a.score);
-
-            // 如果最高分极低，把隐喻答案（最后40条）优先
             if (scores[0].score < 0.3) {
                 const metaphorIndices = ANSWERS.map((_, i) => i).filter(i => i >= 100);
                 const rest = scores.filter(s => s.index < 100).map(s => s.index);
                 return [...metaphorIndices, ...rest];
             }
-
             return scores.map(s => s.index);
         } catch (err) {
-            console.warn('AI 匹配失败，降级随机:', err);
-            const indices = ANSWERS.map((_, i) => i);
-            return indices.sort(() => Math.random() - 0.5);
+            console.warn('AI 匹配失败，降级同义词:', err);
+            return getSynonymSortedIndices(query);
         }
     }
 
     // ================================================================
-    //  7. 核心翻页
+    //  核心翻页
     // ================================================================
-
     function performTurn(beforeOpen, afterOpen) {
         if (state.isFlipping) return;
         state.isFlipping = true;
@@ -821,9 +906,8 @@
     }
 
     // ================================================================
-    //  8. 彩蛋
+    //  彩蛋
     // ================================================================
-
     function triggerEgg() {
         if (state.isEggMode) return;
         state.isEggMode = true;
@@ -913,9 +997,8 @@
     }
 
     // ================================================================
-    //  9. 心声输入
+    //  心声输入
     // ================================================================
-
     function openVoiceOverlay() {
         if (state.isEggMode) {
             exitEggMode();
@@ -946,7 +1029,6 @@
         listeningText.classList.remove('show');
     }
 
-    // 语音识别
     function initSpeechRecognition() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             alert('您的浏览器不支持语音识别，请使用最新版Chrome或Edge。');
@@ -1038,7 +1120,6 @@
         }
     });
 
-    // 提交处理（AI 匹配）
     async function handleVoiceSubmit(text) {
         const input = text || voiceTextarea.value.trim();
         if (!input) {
@@ -1051,13 +1132,12 @@
         voiceSubmit.disabled = true;
         voiceSubmit.textContent = '⏳ 命运倾听中...';
 
-        // 使用 AI 进行匹配
         let sortedIndices;
         try {
             sortedIndices = await getAISortedIndices(input);
         } catch (err) {
             console.warn('AI 匹配失败，使用降级方案');
-            sortedIndices = ANSWERS.map((_, i) => i).sort(() => Math.random() - 0.5);
+            sortedIndices = getSynonymSortedIndices(input);
         }
 
         state.voiceSession.active = true;
@@ -1102,7 +1182,7 @@
     });
 
     // ================================================================
-    //  10. 主点击
+    //  主点击
     // ================================================================
     document.getElementById('container').addEventListener('click', function(e) {
         if (e.target.closest('#voice-overlay')) return;
@@ -1121,10 +1201,12 @@
     });
 
     // ================================================================
-    //  11. 初始化
+    //  初始化
     // ================================================================
-
     async function init() {
+        // 显示版本号
+        document.getElementById('version').textContent = APP_VERSION;
+
         state.isFlipping = false;
         state.isBookOpen = false;
         state.isEggMode = false;
@@ -1152,17 +1234,16 @@
         updateBackContent('深渊在凝视你', '⛵', 0);
         back.classList.remove('flip');
 
-        // 加载 AI 模型（后台进行）
+        // 后台加载 AI
         loadAI().then(success => {
             if (success) {
-                console.log('✅ AI 已就绪，答案总数:', ANSWERS.length);
+                console.log('✅ AI 已就绪');
             } else {
-                console.warn('⚠️ AI 加载失败，将使用降级方案');
+                console.log('⚠️ AI 加载失败，使用备用同义词引擎');
             }
         });
 
-        console.log('📖 失物之书已加载（共 ' + ANSWERS.length + ' 条答案）');
-        console.log('🧠 AI 模型正在后台加载，请稍候...');
+        console.log(`📖 失物之书 ${APP_VERSION} 已加载（共 ${ANSWERS.length} 条答案）`);
         console.log(`🎯 彩蛋将在第 ${state.eggTriggerThreshold} 次翻页时触发`);
         console.log('💡 点击封面输入心声，AI 将为你匹配最合适的答案');
     }
