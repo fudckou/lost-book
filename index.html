@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>失物之书 · 飞翔的荷兰人号</title>
     <style>
+        /* ===== 样式不变（与上版完全一致，复制即可） ===== */
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
         body {
             width:100vw; height:100vh; overflow:hidden;
@@ -94,18 +95,6 @@
             letter-spacing:2px; animation:pulseHint 3s infinite;
         }
         @keyframes pulseHint { 0%,100%{opacity:0.15;} 50%{opacity:0.6;} }
-        #front.preset-active::after {
-            content: '';
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(180,150,110,0.15), transparent);
-            pointer-events: none;
-            opacity: 0.5;
-        }
 
         #back {
             position:absolute; top:0; left:0; width:100%; height:100%;
@@ -126,7 +115,6 @@
                 repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(180,160,130,0.03) 3px,rgba(180,160,130,0.03) 4px);
             pointer-events:none;
         }
-        /* 内容初始完全隐藏，由 flip 类触发动画 */
         #back .icon,
         #back .answer {
             opacity: 0;
@@ -158,7 +146,6 @@
             border-radius:0 0 4px 14px; opacity:0.3;
         }
 
-        /* 翻页动画：内容渐显 */
         #back.flip .icon {
             animation: iconFlip 0.5s ease forwards;
         }
@@ -209,6 +196,179 @@
             backdrop-filter:blur(2px);
         }
 
+        #voice-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10,14,26,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 30px 20px;
+            border-radius: 4px 14px 14px 4px;
+            animation: overlayIn 0.4s ease;
+        }
+        @keyframes overlayIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        #voice-overlay.show { display: flex; }
+
+        #voice-overlay .title {
+            color: #d4c4b0;
+            font-size: 1.6rem;
+            font-family: 'Georgia', serif;
+            letter-spacing: 6px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(180,150,110,0.2);
+        }
+        #voice-overlay .sub {
+            color: #8a7a6a;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        #voice-input-area {
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+        #voice-textarea {
+            width: 100%;
+            height: 100px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(180,150,110,0.25);
+            border-radius: 12px;
+            color: #f0e6d0;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            resize: none;
+            outline: none;
+            transition: border 0.3s;
+            line-height: 1.6;
+        }
+        #voice-textarea:focus { border-color: rgba(180,150,110,0.6); }
+        #voice-textarea::placeholder {
+            color: rgba(180,170,160,0.3);
+            font-style: italic;
+        }
+        #voice-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .voice-btn {
+            padding: 10px 24px;
+            border-radius: 40px;
+            border: 1px solid rgba(180,150,110,0.3);
+            background: rgba(10,14,26,0.4);
+            color: #d4c4b0;
+            font-size: 0.9rem;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(4px);
+        }
+        .voice-btn:hover {
+            background: rgba(180,150,110,0.15);
+            border-color: rgba(180,150,110,0.5);
+        }
+        .voice-btn:active { transform: scale(0.95); }
+        .voice-btn.mic {
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            justify-content: center;
+            font-size: 1.6rem;
+            padding: 0;
+        }
+        .voice-btn.mic.listening {
+            background: rgba(200,80,80,0.3);
+            border-color: rgba(200,80,80,0.6);
+            animation: pulseMic 1s infinite;
+        }
+        @keyframes pulseMic {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(200,80,80,0.4); }
+            50% { box-shadow: 0 0 20px 10px rgba(200,80,80,0); }
+        }
+        #listening-text {
+            color: rgba(180,170,160,0.6);
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            margin-top: 6px;
+            font-style: italic;
+            animation: waveText 1.5s ease-in-out infinite;
+            display: none;
+        }
+        #listening-text.show { display: block; }
+        @keyframes waveText {
+            0%, 100% { opacity: 0.4; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-4px); }
+        }
+        .voice-close {
+            position: absolute;
+            top: 18px;
+            right: 24px;
+            font-size: 1.8rem;
+            color: rgba(180,170,160,0.3);
+            cursor: pointer;
+            transition: 0.3s;
+            background: none;
+            border: none;
+            font-family: 'Georgia', serif;
+        }
+        .voice-close:hover {
+            color: rgba(180,170,160,0.7);
+            transform: rotate(90deg);
+        }
+
+        /* 加载提示 */
+        #loading-ai {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10,14,26,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 60;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 4px 14px 14px 4px;
+            color: #d4c4b0;
+            font-family: 'Georgia', serif;
+        }
+        #loading-ai.show { display: flex; }
+        #loading-ai .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(180,150,110,0.2);
+            border-top-color: #d4c4b0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-ai .text {
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            font-style: italic;
+            animation: pulseHint 2s infinite;
+        }
+
         @media (max-width:380px) {
             #book-wrapper { max-width:300px; }
             #front .title { font-size:2rem; letter-spacing:10px; }
@@ -240,7 +400,7 @@
                 <div class="ornament">⚓</div>
                 <div class="title">失物之书</div>
                 <div class="subtitle">— 寻回遗失之物 —</div>
-                <div class="hint">✦ 轻触书封 ✦</div>
+                <div class="hint">✦ 轻触书封，倾诉心声 ✦</div>
             </div>
             <div id="back">
                 <div class="icon" id="answer-icon">⛵</div>
@@ -254,13 +414,41 @@
         <span class="sub">✦ 书已合 ✦</span>
     </div>
     <div id="status"><span id="status-text">沉睡于深海</span></div>
+
+    <!-- AI 加载提示 -->
+    <div id="loading-ai">
+        <div class="spinner"></div>
+        <div class="text">🌊 命运正在苏醒...</div>
+    </div>
+
+    <!-- 心声覆盖层 -->
+    <div id="voice-overlay">
+        <button class="voice-close" id="voice-close">✕</button>
+        <div class="title">🌊 向大海倾诉</div>
+        <div class="sub">说出或写下你的心声，命运将为你翻开一页</div>
+        <div id="voice-input-area">
+            <textarea id="voice-textarea" placeholder="在此写下你的困惑、愿望或心事……"></textarea>
+            <div id="listening-text">🌊 大海正在倾听...</div>
+            <div id="voice-controls">
+                <button class="voice-btn" id="voice-submit">✦ 聆听</button>
+                <button class="voice-btn mic" id="voice-mic" title="点击说话">🎤</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script>
+<script type="importmap">
+    {
+        "imports": {
+            "@xenova/transformers": "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js"
+        }
+    }
+</script>
+<script type="module">
     // ================================================================
-    //  1. 数据
+    //  1. 数据（原始100 + 隐喻20 + 新增20 = 140条）
     // ================================================================
-    const ANSWERS = [
+    const BASE_ANSWERS = [
         "浓雾终将散开，但别急。","扬起你的主帆，风会来。","深渊正在注视着你，别回头。",
         "等待满月之夜，那时门会打开。","你的心脏还在跳动，虽然它已冰冷。",
         "转向逆风的方向，那里有出口。","旧日的锁链，无法被海水冲断。",
@@ -312,8 +500,56 @@
         "但这趟伟大的旅程，才刚刚开始。","倾听海水的声音，那即是真理。",
         "飞翔的荷兰人号，永远与你同在。"
     ];
+
+    const METAPHOR_ANSWERS = [
+        "今晚就此靠岸吧。",
+        "把锚抛向星光最暗的地方。",
+        "海风会替你关掉多余的帆。",
+        "你已在港湾的视线里。",
+        "浪声说，可以了。",
+        "收起罗盘，它转得太久了。",
+        "信风会在你醒来时敲门。",
+        "船底有最轻柔的夜。",
+        "不必再数桅杆上的灯。",
+        "潮水会带走这一程的痕迹。",
+        "你坐的位置，正好被月亮照着。",
+        "该让舵轮自己转一圈了。",
+        "雾里有灯，灯下有岸。",
+        "顺流而下，也是向前。",
+        "把灯笼挂在船尾，它会替你照亮来路。",
+        "有些浪，是用来停的。",
+        "天黑后，海就是你的枕头。",
+        "锁链已经自己解开了。",
+        "你需要的只是甲板上的一次呼吸。",
+        "今夜，船不走了。"
+    ];
+
+    const NEW_METAPHOR = [
+        "让海风把锁链吹成铃铛。",
+        "你的船桨该浸入另一片月光了。",
+        "桅杆上的绳结正自己松开。",
+        "潮声会替你回应那些未说出口的话。",
+        "你站的位置，恰好避开了所有暗流。",
+        "天边那朵云，是风留给你的便签。",
+        "海浪替你翻过不该停在这一页。",
+        "船底有光，是旧日你遗忘的锚。",
+        "顺着月光的方向走，别回头。",
+        "沉默也是一种航速，不丢人。",
+        "你的航线从未断过，只是太弯了。",
+        "今夜，你不必擦干脸上的水痕。",
+        "舵轮在你手里，它不急。",
+        "风会绕道，但不会遗忘你。",
+        "所有沉入海底的，都会变成贝壳。",
+        "你正航行在无人打扰的深蓝里。",
+        "锁链已锈，你该转身了。",
+        "海鸥停在你桅杆上，它替你看见了明日的太阳。",
+        "你并非迷失，你只是在走一条更弯的航路。",
+        "浪潮会替你重写所有未完成的句子。"
+    ];
+
+    const ANSWERS = [...BASE_ANSWERS, ...METAPHOR_ANSWERS, ...NEW_METAPHOR];
     const ICONS = ['⛵','🗺️','🧭','⚓','🏴‍☠️','🔱','🐚','🌊','📜','🌙','⭐','🕯️'];
-    const RANDOM_EGG_MESSAGES = [
+    const EGG_MESSAGES = [
         "有些宝藏，不在今日。","潮水带走了这一页。","风停了，书也倦了。",
         "浪花抹去了字迹。","海雾太重，看不清了。","月亮藏进了云里。",
         "你找的，或许在下一片海域。","不是每颗星辰都在今夜坠落。",
@@ -324,17 +560,54 @@
         "它认得你。它在躲你。","你还没准备好看见它。",
         "这一页是空白的。等你来写。","船在等你。书也在等你。"
     ];
-    const PRESET_ANSWERS = [
-        "那是海妖的诡计，别上当。",
-        "检查你的罗盘，它在疯狂旋转。",
-        "灯塔已经熄灭，你要自己发光。",
-        "这一次，真的可以靠岸了。",
-        "你早已知道答案，何须问我。"
-    ];
-    const PRESET_EGG = "你翻得越快，它藏得越深。";
 
     // ================================================================
-    //  2. 音效
+    //  2. DOM
+    // ================================================================
+    const book = document.getElementById('book');
+    const back = document.getElementById('back');
+    const answerText = document.getElementById('answer-text');
+    const answerIcon = document.getElementById('answer-icon');
+    const pageNum = document.getElementById('page-num');
+    const eggFloat = document.getElementById('egg-float');
+    const eggText = document.getElementById('egg-text');
+    const statusText = document.getElementById('status-text');
+    const frontHint = document.querySelector('#front .hint');
+    const voiceOverlay = document.getElementById('voice-overlay');
+    const voiceClose = document.getElementById('voice-close');
+    const voiceTextarea = document.getElementById('voice-textarea');
+    const voiceSubmit = document.getElementById('voice-submit');
+    const voiceMic = document.getElementById('voice-mic');
+    const listeningText = document.getElementById('listening-text');
+    const loadingAI = document.getElementById('loading-ai');
+
+    // ================================================================
+    //  3. 状态
+    // ================================================================
+    const state = {
+        isFlipping: false,
+        isBookOpen: false,
+        isEggMode: false,
+        eggAnimId: null,
+        eggMessage: '',
+        voiceSession: {
+            active: false,
+            query: '',
+            answerIndices: [],
+            currentIndex: 0,
+            pageCount: 0,
+        },
+        eggTriggerThreshold: 5,
+        recognition: null,
+        isListening: false,
+        // AI 相关
+        aiReady: false,
+        embedder: null,
+        answerEmbeddings: null,
+    };
+
+    // ================================================================
+    //  4. 音效
     // ================================================================
     let audioCtx = null;
     function getAudioCtx() {
@@ -384,196 +657,185 @@
     }
 
     // ================================================================
-    //  3. DOM
-    // ================================================================
-    const book = document.getElementById('book');
-    const front = document.getElementById('front');
-    const back = document.getElementById('back');
-    const answerText = document.getElementById('answer-text');
-    const answerIcon = document.getElementById('answer-icon');
-    const pageNum = document.getElementById('page-num');
-    const eggFloat = document.getElementById('egg-float');
-    const eggText = document.getElementById('egg-text');
-    const statusText = document.getElementById('status-text');
-    const frontHint = document.querySelector('#front .hint');
-
-    // ================================================================
-    //  4. 统一状态
-    // ================================================================
-    const state = {
-        isFlipping: false,
-        isBookOpen: false,
-        pageCount: 0,
-        isEggMode: false,
-        eggAnimId: null,
-        eggMessage: '',
-        randomEggTrigger: Math.floor(Math.random() * 6) + 5,
-
-        presetMode: false,
-        presetStep: 0,
-
-        longPressTimer: null,
-        longPressTriggered: false,
-        longPressDuration: 800,
-    };
-
-    // ================================================================
-    //  5. 工具函数
+    //  5. 工具
     // ================================================================
     function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-    function getRandomAnswer() { return rand(ANSWERS); }
-    function getRandomIcon() { return rand(ICONS); }
-    function getRandomPage() { return Math.floor(Math.random() * 300) + 1; }
-    function getRandomEgg() { return rand(RANDOM_EGG_MESSAGES); }
-
-    function vibrate(duration = 50) {
+    function getRandomEgg() { return rand(EGG_MESSAGES); }
+    function vibrate(duration = 30) {
         try { if (navigator.vibrate) navigator.vibrate(duration); } catch (_) {}
     }
 
-    // 更新内容，不改变任何样式（由 CSS 控制显隐）
     function updateBackContent(text, icon, page) {
-        answerText.textContent = text || getRandomAnswer();
-        answerIcon.textContent = icon || getRandomIcon();
-        pageNum.textContent = `— 第 ${page || getRandomPage()} 页 —`;
+        answerText.textContent = text;
+        answerIcon.textContent = icon;
+        pageNum.textContent = `— 第 ${page} 页 —`;
     }
 
     function getCurrentAnswer() {
-        if (state.presetMode) {
-            if (state.presetStep >= 1 && state.presetStep <= 5) {
-                const idx = state.presetStep - 1;
-                return { text: PRESET_ANSWERS[idx], icon: '⚓', page: state.presetStep };
-            } else {
-                return { text: getRandomAnswer(), icon: getRandomIcon(), page: getRandomPage() };
+        const list = state.voiceSession.answerIndices;
+        const idx = state.voiceSession.currentIndex;
+        if (list.length === 0) return null;
+        const ansIdx = list[idx % list.length];
+        return {
+            text: ANSWERS[ansIdx],
+            icon: ICONS[ansIdx % ICONS.length],
+            page: ansIdx + 1,
+        };
+    }
+
+    // ================================================================
+    //  6. AI 匹配引擎（使用 Transformers.js）
+    // ================================================================
+
+    let pipeline = null;
+
+    async function loadAI() {
+        loadingAI.classList.add('show');
+        try {
+            const { pipeline: pipelineFn } = await import('@xenova/transformers');
+            pipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+            // 预计算所有答案的向量
+            const start = performance.now();
+            const embeddings = [];
+            for (let i = 0; i < ANSWERS.length; i++) {
+                const result = await pipeline(ANSWERS[i], { pooling: 'mean', normalize: true });
+                embeddings.push(result.data);
+                // 每10条更新一次进度
+                if (i % 10 === 0) {
+                    loadingAI.querySelector('.text').textContent = `🌊 命运正在苏醒... ${Math.round((i / ANSWERS.length) * 100)}%`;
+                }
             }
-        } else {
-            return { text: getRandomAnswer(), icon: getRandomIcon(), page: getRandomPage() };
+            state.answerEmbeddings = embeddings;
+            const elapsed = ((performance.now() - start) / 1000).toFixed(1);
+            console.log(`✅ AI 模型加载完成 (${ANSWERS.length} 条答案, ${elapsed}s)`);
+            state.aiReady = true;
+            loadingAI.classList.remove('show');
+            return true;
+        } catch (err) {
+            console.error('AI 加载失败:', err);
+            loadingAI.querySelector('.text').textContent = '⚠️ 命运暂时沉睡，使用备用方式...';
+            setTimeout(() => { loadingAI.classList.remove('show'); }, 1500);
+            return false;
+        }
+    }
+
+    // 计算用户输入与所有答案的相似度，返回排序后的索引
+    async function getAISortedIndices(query) {
+        if (!state.aiReady || !pipeline) {
+            // 降级：随机打乱
+            const indices = ANSWERS.map((_, i) => i);
+            return indices.sort(() => Math.random() - 0.5);
+        }
+
+        try {
+            const result = await pipeline(query, { pooling: 'mean', normalize: true });
+            const queryEmbedding = result.data;
+            const scores = [];
+            for (let i = 0; i < state.answerEmbeddings.length; i++) {
+                const emb = state.answerEmbeddings[i];
+                let dot = 0;
+                for (let j = 0; j < queryEmbedding.length; j++) {
+                    dot += queryEmbedding[j] * emb[j];
+                }
+                scores.push({ index: i, score: dot });
+            }
+            scores.sort((a, b) => b.score - a.score);
+
+            // 如果最高分极低，把隐喻答案（最后40条）优先
+            if (scores[0].score < 0.3) {
+                const metaphorIndices = ANSWERS.map((_, i) => i).filter(i => i >= 100);
+                const rest = scores.filter(s => s.index < 100).map(s => s.index);
+                return [...metaphorIndices, ...rest];
+            }
+
+            return scores.map(s => s.index);
+        } catch (err) {
+            console.warn('AI 匹配失败，降级随机:', err);
+            const indices = ANSWERS.map((_, i) => i);
+            return indices.sort(() => Math.random() - 0.5);
         }
     }
 
     // ================================================================
-    //  6. 核心翻页（无闪烁版）
+    //  7. 核心翻页
     // ================================================================
+
     function performTurn(beforeOpen, afterOpen) {
         if (state.isFlipping) return;
         state.isFlipping = true;
 
-        // 1. 先移除 flip 类，确保内容隐藏
         back.classList.remove('flip');
-
-        // 2. 合拢书本（如果已经翻开则合拢）
         book.classList.remove('flipped');
         state.isBookOpen = false;
         playCloseSound();
 
-        // 3. 等待合拢动画完成（400ms）
         setTimeout(() => {
-            // 4. 更新内容（此时内容仍隐藏，因为没有 flip 类）
             if (beforeOpen) beforeOpen();
-
-            // 5. 翻开书本
             book.classList.add('flipped');
             state.isBookOpen = true;
             playPageSound();
 
-            // 6. 等待翻转动画完成（700ms 后）
             setTimeout(() => {
-                // 7. 现在添加 flip 类触发入场动画
                 back.classList.add('flip');
                 if (afterOpen) afterOpen();
                 state.isFlipping = false;
-            }, 300); // 与 CSS transition 时长一致
+            }, 700);
         }, 400);
     }
 
-    function openBook() {
+    function openFirstAnswer() {
         if (state.isFlipping || state.isEggMode) return;
-
-        if (state.presetMode && state.presetStep === 0) {
-            state.presetStep = 1;
-        }
         const ans = getCurrentAnswer();
-        state.pageCount = state.presetMode ? state.presetStep : 1;
-
+        if (!ans) return;
+        state.voiceSession.pageCount = 1;
         performTurn(
-            function() {
-                updateBackContent(ans.text, ans.icon, ans.page);
-            },
-            function() {
-                statusText.textContent = `✦ 第 ${state.pageCount} 页 ✦`;
+            () => updateBackContent(ans.text, ans.icon, ans.page),
+            () => {
+                statusText.textContent = `✦ 第 ${state.voiceSession.pageCount} 页 ✦`;
                 frontHint.textContent = '✦ 翻页继续 ✦';
             }
         );
     }
 
-    function turnPage() {
+    function turnNextAnswer() {
         if (state.isFlipping || state.isEggMode) return;
         if (!state.isBookOpen) return;
+        if (!state.voiceSession.active) return;
 
-        // 普通模式彩蛋触发
-        if (!state.presetMode) {
-            if (state.pageCount >= state.randomEggTrigger) {
-                enterEggMode();
-                return;
-            }
-        }
-
-        // 预设模式彩蛋触发
-        if (state.presetMode) {
-            if (state.presetStep === 6) {
-                enterEggMode();
-                return;
-            }
-            if (state.presetStep >= 5) {
-                // 合拢后直接进入彩蛋
-                book.classList.remove('flipped');
-                state.isBookOpen = false;
-                frontHint.textContent = '✦ 潮退后再来 ✦';
-                statusText.textContent = '🌊 书已合';
-                state.presetStep = 6;
-                setTimeout(() => {
-                    enterEggMode();
-                }, 400);
-                return;
-            }
-        }
-
-        // 正常翻页
-        if (state.presetMode) {
-            state.presetStep++;
-        }
-        const ans = getCurrentAnswer();
-        state.pageCount = state.presetMode ? state.presetStep : state.pageCount + 1;
-
-        performTurn(
-            function() {
-                updateBackContent(ans.text, ans.icon, ans.page);
-            },
-            function() {
-                statusText.textContent = `✦ 第 ${state.pageCount} 页 ✦`;
-                frontHint.textContent = '✦ 翻页继续 ✦';
-            }
-        );
-    }
-
-    // ================================================================
-    //  7. 彩蛋模式（保持不变）
-    // ================================================================
-
-    function enterEggMode() {
-        if (state.isEggMode) {
-            resetEggAnimation();
+        const nextPage = state.voiceSession.pageCount + 1;
+        if (nextPage > state.eggTriggerThreshold) {
+            triggerEgg();
             return;
         }
 
+        state.voiceSession.currentIndex = (state.voiceSession.currentIndex + 1) % state.voiceSession.answerIndices.length;
+        state.voiceSession.pageCount = nextPage;
+        const ans = getCurrentAnswer();
+        performTurn(
+            () => updateBackContent(ans.text, ans.icon, ans.page),
+            () => {
+                statusText.textContent = `✦ 第 ${state.voiceSession.pageCount} 页 ✦`;
+                frontHint.textContent = '✦ 翻页继续 ✦';
+            }
+        );
+    }
+
+    // ================================================================
+    //  8. 彩蛋
+    // ================================================================
+
+    function triggerEgg() {
+        if (state.isEggMode) return;
         state.isEggMode = true;
         playCloseSound();
 
+        state.voiceSession.active = false;
         book.classList.remove('flipped');
         state.isBookOpen = false;
         frontHint.textContent = '✦ 潮退后再来 ✦';
         statusText.textContent = '🌊 书已合';
 
-        state.eggMessage = state.presetMode ? PRESET_EGG : getRandomEgg();
+        state.eggMessage = getRandomEgg();
         startEggAnimation(state.eggMessage);
     }
 
@@ -582,13 +844,11 @@
             cancelAnimationFrame(state.eggAnimId);
             state.eggAnimId = null;
         }
-
         eggText.textContent = text;
         eggFloat.style.transition = 'none';
         eggFloat.style.opacity = '0';
         eggFloat.style.transform = 'translate(-50%,-40%) scale(0.9)';
         void eggFloat.offsetHeight;
-
         eggFloat.style.transition = 'none';
         eggFloat.style.opacity = '1';
         eggFloat.style.transform = 'translate(-50%,-50%) scale(1)';
@@ -604,11 +864,9 @@
             const eased = 1 - Math.pow(1 - progress, 1.5);
             const currentY = endY * eased;
             const currentOpacity = 1 - eased * 0.9;
-
             eggFloat.style.transition = 'none';
             eggFloat.style.transform = `translate(-50%, calc(-50% + ${currentY}px)) scale(${1 - eased * 0.05})`;
             eggFloat.style.opacity = currentOpacity;
-
             if (progress < 1) {
                 state.eggAnimId = requestAnimationFrame(animateEgg);
             } else {
@@ -617,7 +875,6 @@
                 state.eggAnimId = null;
             }
         }
-
         state.eggAnimId = requestAnimationFrame(animateEgg);
     }
 
@@ -642,127 +899,252 @@
         eggFloat.style.opacity = '0';
         eggFloat.style.transform = 'translate(-50%,-50%) scale(0.9)';
         state.isEggMode = false;
-        if (!state.presetMode) {
-            state.pageCount = 0;
-            state.randomEggTrigger = Math.floor(Math.random() * 6) + 5;
-        }
-        frontHint.textContent = '✦ 轻触书封 ✦';
+        state.voiceSession.active = false;
+        state.voiceSession.answerIndices = [];
+        state.voiceSession.currentIndex = 0;
+        state.voiceSession.pageCount = 0;
+        state.eggTriggerThreshold = Math.floor(Math.random() * 3) + 5;
+        book.classList.remove('flipped');
+        state.isBookOpen = false;
+        frontHint.textContent = '✦ 轻触书封，倾诉心声 ✦';
         statusText.textContent = '沉睡于深海';
+        updateBackContent('深渊在凝视你', '⛵', 0);
+        back.classList.remove('flip');
     }
 
     // ================================================================
-    //  8. 预设模式切换
+    //  9. 心声输入
     // ================================================================
 
-    function togglePresetMode() {
-        if (state.presetMode) {
-            state.presetMode = false;
-            state.presetStep = 0;
-            if (state.isEggMode) exitEggMode();
-            book.classList.remove('flipped');
-            state.isBookOpen = false;
-            frontHint.textContent = '✦ 轻触书封 ✦';
-            statusText.textContent = '沉睡于深海';
-            front.classList.remove('preset-active');
-            state.pageCount = 0;
-            state.randomEggTrigger = Math.floor(Math.random() * 6) + 5;
-            vibrate(60);
-        } else {
-            state.presetMode = true;
-            state.presetStep = 0;
-            if (state.isEggMode) exitEggMode();
-            book.classList.remove('flipped');
-            state.isBookOpen = false;
-            frontHint.textContent = '✦ 轻触书封 ✦';
-            statusText.textContent = '⚓ 命运已就绪';
-            front.classList.add('preset-active');
-            vibrate(60);
-        }
-    }
-
-    // ================================================================
-    //  9. 长按检测
-    // ================================================================
-    front.addEventListener('pointerdown', function(e) {
-        const rect = front.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const w = rect.width;
-        const h = rect.height;
-        const cornerSize = 0.3;
-        const isRightCorner = x > w * (1 - cornerSize) && y > h * (1 - cornerSize);
-        if (!isRightCorner) return;
-
-        if (state.longPressTimer) clearTimeout(state.longPressTimer);
-        state.longPressTriggered = false;
-        state.longPressTimer = setTimeout(() => {
-            state.longPressTriggered = true;
-            togglePresetMode();
-            state.longPressTimer = null;
-        }, state.longPressDuration);
-    });
-
-    front.addEventListener('pointerup', function(e) {
-        if (state.longPressTimer) {
-            clearTimeout(state.longPressTimer);
-            state.longPressTimer = null;
-        }
-        if (state.longPressTriggered) {
-            state.longPressTriggered = false;
-            e.stopPropagation();
-        }
-    });
-    front.addEventListener('pointercancel', function() {
-        if (state.longPressTimer) {
-            clearTimeout(state.longPressTimer);
-            state.longPressTimer = null;
-        }
-        state.longPressTriggered = false;
-    });
-
-    // ================================================================
-    //  10. 主点击事件
-    // ================================================================
-    document.getElementById('container').addEventListener('click', function(e) {
-        if (state.longPressTriggered) {
-            state.longPressTriggered = false;
+    function openVoiceOverlay() {
+        if (state.isEggMode) {
+            exitEggMode();
+            setTimeout(() => {
+                voiceOverlay.classList.add('show');
+                voiceTextarea.focus();
+            }, 300);
             return;
         }
+        if (state.voiceSession.active) return;
+        voiceOverlay.classList.add('show');
+        voiceTextarea.focus();
+        listeningText.classList.remove('show');
+        if (state.recognition) {
+            state.recognition.abort();
+            state.isListening = false;
+            voiceMic.classList.remove('listening');
+        }
+    }
+
+    function closeVoiceOverlay() {
+        voiceOverlay.classList.remove('show');
+        if (state.recognition) {
+            state.recognition.abort();
+            state.isListening = false;
+            voiceMic.classList.remove('listening');
+        }
+        listeningText.classList.remove('show');
+    }
+
+    // 语音识别
+    function initSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            alert('您的浏览器不支持语音识别，请使用最新版Chrome或Edge。');
+            return null;
+        }
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SR();
+        recognition.lang = 'zh-CN';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = function() {
+            state.isListening = true;
+            voiceMic.classList.add('listening');
+            listeningText.classList.add('show');
+            voiceTextarea.placeholder = '🎤 正在聆听...';
+        };
+
+        recognition.onresult = function(event) {
+            let interim = '';
+            let final = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    final += event.results[i][0].transcript;
+                } else {
+                    interim += event.results[i][0].transcript;
+                }
+            }
+            if (final) {
+                voiceTextarea.value = final;
+                listeningText.classList.remove('show');
+                voiceMic.classList.remove('listening');
+                state.isListening = false;
+                handleVoiceSubmit(final);
+            } else if (interim) {
+                voiceTextarea.value = interim;
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.warn('语音识别错误:', event.error);
+            listeningText.classList.remove('show');
+            voiceMic.classList.remove('listening');
+            state.isListening = false;
+            voiceTextarea.placeholder = '未能识别，请手动输入...';
+            if (event.error === 'not-allowed') {
+                alert('请允许浏览器使用麦克风权限。');
+            }
+        };
+
+        recognition.onend = function() {
+            listeningText.classList.remove('show');
+            voiceMic.classList.remove('listening');
+            state.isListening = false;
+            if (!voiceTextarea.value.trim()) {
+                voiceTextarea.placeholder = '未听清，请再试一次或手动输入...';
+            }
+        };
+
+        return recognition;
+    }
+
+    voiceMic.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (state.isListening) {
+            if (state.recognition) {
+                state.recognition.abort();
+                state.isListening = false;
+                voiceMic.classList.remove('listening');
+                listeningText.classList.remove('show');
+            }
+            return;
+        }
+
+        if (!state.recognition) {
+            state.recognition = initSpeechRecognition();
+            if (!state.recognition) return;
+        }
+
+        voiceTextarea.value = '';
+        voiceTextarea.placeholder = '🎤 正在聆听...';
+        try {
+            state.recognition.start();
+        } catch (err) {
+            state.recognition.abort();
+            setTimeout(() => {
+                state.recognition.start();
+            }, 100);
+        }
+    });
+
+    // 提交处理（AI 匹配）
+    async function handleVoiceSubmit(text) {
+        const input = text || voiceTextarea.value.trim();
+        if (!input) {
+            voiceTextarea.placeholder = '请写下或说出你的心声...';
+            voiceTextarea.focus();
+            return;
+        }
+
+        listeningText.classList.add('show');
+        voiceSubmit.disabled = true;
+        voiceSubmit.textContent = '⏳ 命运倾听中...';
+
+        // 使用 AI 进行匹配
+        let sortedIndices;
+        try {
+            sortedIndices = await getAISortedIndices(input);
+        } catch (err) {
+            console.warn('AI 匹配失败，使用降级方案');
+            sortedIndices = ANSWERS.map((_, i) => i).sort(() => Math.random() - 0.5);
+        }
+
+        state.voiceSession.active = true;
+        state.voiceSession.query = input;
+        state.voiceSession.answerIndices = sortedIndices;
+        state.voiceSession.currentIndex = 0;
+        state.voiceSession.pageCount = 0;
+        state.eggTriggerThreshold = Math.floor(Math.random() * 3) + 5;
+
+        voiceOverlay.classList.remove('show');
+        listeningText.classList.remove('show');
+        voiceSubmit.disabled = false;
+        voiceSubmit.textContent = '✦ 聆听';
+
+        openFirstAnswer();
+        vibrate(30);
+    }
+
+    voiceSubmit.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (voiceSubmit.disabled) return;
+        handleVoiceSubmit();
+    });
+
+    voiceTextarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (voiceSubmit.disabled) return;
+            handleVoiceSubmit();
+        }
+    });
+
+    voiceClose.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeVoiceOverlay();
+    });
+
+    voiceOverlay.addEventListener('click', function(e) {
+        if (e.target === voiceOverlay) {
+            closeVoiceOverlay();
+        }
+    });
+
+    // ================================================================
+    //  10. 主点击
+    // ================================================================
+    document.getElementById('container').addEventListener('click', function(e) {
+        if (e.target.closest('#voice-overlay')) return;
 
         if (state.isEggMode) {
             resetEggAnimation();
             return;
         }
 
-        if (!state.isBookOpen) {
-            openBook();
-        } else {
-            turnPage();
+        if (state.isBookOpen && state.voiceSession.active) {
+            turnNextAnswer();
+            return;
         }
+
+        openVoiceOverlay();
     });
 
     // ================================================================
     //  11. 初始化
     // ================================================================
-    function init() {
+
+    async function init() {
         state.isFlipping = false;
         state.isBookOpen = false;
-        state.pageCount = 0;
-        state.randomEggTrigger = Math.floor(Math.random() * 6) + 5;
         state.isEggMode = false;
         if (state.eggAnimId) {
             cancelAnimationFrame(state.eggAnimId);
             state.eggAnimId = null;
         }
         state.eggMessage = '';
-        state.presetMode = false;
-        state.presetStep = 0;
-        state.longPressTimer = null;
-        state.longPressTriggered = false;
+        state.voiceSession.active = false;
+        state.voiceSession.answerIndices = [];
+        state.voiceSession.currentIndex = 0;
+        state.voiceSession.pageCount = 0;
+        state.eggTriggerThreshold = Math.floor(Math.random() * 3) + 5;
+        state.recognition = null;
+        state.isListening = false;
+        state.aiReady = false;
+        state.answerEmbeddings = null;
 
         book.classList.remove('flipped');
-        front.classList.remove('preset-active');
-        frontHint.textContent = '✦ 轻触书封 ✦';
+        frontHint.textContent = '✦ 轻触书封，倾诉心声 ✦';
         statusText.textContent = '沉睡于深海';
         eggFloat.style.opacity = '0';
         eggFloat.style.transform = 'translate(-50%,-50%) scale(0.9)';
@@ -770,12 +1152,19 @@
         updateBackContent('深渊在凝视你', '⛵', 0);
         back.classList.remove('flip');
 
-        console.log('📖 失物之书已加载');
-        console.log(`🎯 普通模式彩蛋将在第 ${state.randomEggTrigger} 次翻开时触发`);
-        console.log('🔮 长按封面右下角0.8秒切换预设模式');
-        console.log('📋 预设答案:', PRESET_ANSWERS);
-        console.log(`   🥚 彩蛋: ${PRESET_EGG}`);
-        console.log('💡 彩蛋触发后，点击书本即可重置彩蛋动画（内容不变）');
+        // 加载 AI 模型（后台进行）
+        loadAI().then(success => {
+            if (success) {
+                console.log('✅ AI 已就绪，答案总数:', ANSWERS.length);
+            } else {
+                console.warn('⚠️ AI 加载失败，将使用降级方案');
+            }
+        });
+
+        console.log('📖 失物之书已加载（共 ' + ANSWERS.length + ' 条答案）');
+        console.log('🧠 AI 模型正在后台加载，请稍候...');
+        console.log(`🎯 彩蛋将在第 ${state.eggTriggerThreshold} 次翻页时触发`);
+        console.log('💡 点击封面输入心声，AI 将为你匹配最合适的答案');
     }
 
     init();
