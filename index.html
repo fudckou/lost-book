@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>失物之书 · 飞翔的荷兰人号</title>
     <style>
-        /* ===== 样式 ===== */
+        /* ===== 样式与之前一致，仅调整状态栏位置 ===== */
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
         body {
             width:100vw; height:100vh; overflow:hidden;
@@ -94,7 +94,6 @@
             letter-spacing:2px; animation:pulseHint 3s infinite;
         }
         @keyframes pulseHint { 0%,100%{opacity:0.15;} 50%{opacity:0.6;} }
-        /* 版本号 */
         #version {
             position: absolute;
             bottom: 62px;
@@ -195,12 +194,27 @@
             position:absolute; bottom:24px; left:0; width:100%; text-align:center;
             z-index:5; font-size:0.6rem; color:rgba(180,170,160,0.2);
             letter-spacing:3px; pointer-events:none;
+            transition: color 0.3s;
         }
         #status span {
             background:rgba(10,14,26,0.3);
             padding:4px 14px; border-radius:20px;
             backdrop-filter:blur(2px);
+            display: inline-block;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+        #status.error span {
+            color: #d4a0a0;
+            border: 1px solid rgba(200,80,80,0.2);
+        }
+        #status.success span {
+            color: #a0d4a0;
+            border: 1px solid rgba(80,200,80,0.2);
+        }
+        /* 覆盖层 */
         #voice-overlay {
             position: absolute;
             top: 0; left: 0;
@@ -338,38 +352,6 @@
             color: rgba(180,170,160,0.7);
             transform: rotate(90deg);
         }
-        #loading-ai {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(10,14,26,0.8);
-            backdrop-filter: blur(4px);
-            z-index: 60;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            border-radius: 4px 14px 14px 4px;
-            color: #d4c4b0;
-            font-family: 'Georgia', serif;
-        }
-        #loading-ai.show { display: flex; }
-        #loading-ai .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(180,150,110,0.2);
-            border-top-color: #d4c4b0;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #loading-ai .text {
-            font-size: 1.2rem;
-            letter-spacing: 4px;
-            font-style: italic;
-            animation: pulseHint 2s infinite;
-        }
         @media (max-width:380px) {
             #book-wrapper { max-width:300px; }
             #front .title { font-size:2rem; letter-spacing:10px; }
@@ -377,6 +359,7 @@
             #back .icon { font-size:2.2rem; }
             #egg-float { font-size:1.1rem; width:85%; }
             #version { font-size:0.5rem; bottom:52px; right:12px; }
+            #status span { font-size:0.5rem; padding:2px 10px; }
         }
         @media (orientation:landscape) and (max-height:500px) {
             #book-wrapper { max-width:220px; }
@@ -385,6 +368,7 @@
             #back .icon { font-size:2rem; }
             #egg-float { font-size:1rem; width:70%; }
             #version { font-size:0.45rem; bottom:40px; right:10px; }
+            #status span { font-size:0.45rem; padding:2px 8px; }
         }
     </style>
 </head>
@@ -404,8 +388,7 @@
                 <div class="title">失物之书</div>
                 <div class="subtitle">— 寻回遗失之物 —</div>
                 <div class="hint">✦ 轻触书封，倾诉心声 ✦</div>
-                <!-- 版本号 -->
-                <div id="version">v2.0.1</div>
+                <div id="version">v2.0.2</div>
             </div>
             <div id="back">
                 <div class="icon" id="answer-icon">⛵</div>
@@ -418,12 +401,7 @@
         <span id="egg-text">潮水带走了这一页</span>
         <span class="sub">✦ 书已合 ✦</span>
     </div>
-    <div id="status"><span id="status-text">沉睡于深海</span></div>
-
-    <div id="loading-ai">
-        <div class="spinner"></div>
-        <div class="text">🌊 命运正在苏醒...</div>
-    </div>
+    <div id="status"><span id="status-text">⏳ 正在加载...</span></div>
 
     <div id="voice-overlay">
         <button class="voice-close" id="voice-close">✕</button>
@@ -449,12 +427,12 @@
 </script>
 <script type="module">
     // ================================================================
-    //  版本号（修改这里即可更新）
+    // 版本号
     // ================================================================
-    const APP_VERSION = 'v2.0.1';
+    const APP_VERSION = 'v2.0.2';
 
     // ================================================================
-    //  数据（140条答案）
+    // 数据（140条答案，与之前一致）
     // ================================================================
     const BASE_ANSWERS = [
         "浓雾终将散开，但别急。","扬起你的主帆，风会来。","深渊正在注视着你，别回头。",
@@ -549,7 +527,7 @@
     ];
 
     // ================================================================
-    //  同义词引擎（备用降级）
+    // 同义词引擎（备用）
     // ================================================================
     const SYNONYM_MAP = {
         "累": ["累","疲惫","疲倦","倦怠","劳累","疲乏","困乏","力竭","乏力","透支"],
@@ -661,8 +639,10 @@
     }
 
     // ================================================================
-    //  DOM
+    // DOM 引用
     // ================================================================
+    const statusText = document.getElementById('status-text');
+    const statusContainer = document.getElementById('status');
     const book = document.getElementById('book');
     const back = document.getElementById('back');
     const answerText = document.getElementById('answer-text');
@@ -670,7 +650,6 @@
     const pageNum = document.getElementById('page-num');
     const eggFloat = document.getElementById('egg-float');
     const eggText = document.getElementById('egg-text');
-    const statusText = document.getElementById('status-text');
     const frontHint = document.querySelector('#front .hint');
     const voiceOverlay = document.getElementById('voice-overlay');
     const voiceClose = document.getElementById('voice-close');
@@ -678,11 +657,8 @@
     const voiceSubmit = document.getElementById('voice-submit');
     const voiceMic = document.getElementById('voice-mic');
     const listeningText = document.getElementById('listening-text');
-    const loadingAI = document.getElementById('loading-ai');
 
-    // ================================================================
-    //  状态
-    // ================================================================
+    // 状态
     const state = {
         isFlipping: false,
         isBookOpen: false,
@@ -700,11 +676,11 @@
         recognition: null,
         isListening: false,
         aiReady: false,
-        aiLoadingFinished: false,
+        answerEmbeddings: null,
     };
 
     // ================================================================
-    //  音效
+    // 音效（略，与之前一致）
     // ================================================================
     let audioCtx = null;
     function getAudioCtx() {
@@ -754,7 +730,7 @@
     }
 
     // ================================================================
-    //  工具
+    // 工具
     // ================================================================
     function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
     function getRandomEgg() { return rand(EGG_MESSAGES); }
@@ -780,34 +756,62 @@
         };
     }
 
+    // 状态更新函数
+    function setStatus(msg, type = '') {
+        statusText.textContent = msg;
+        statusContainer.className = type;
+    }
+
     // ================================================================
-    //  AI 加载与匹配
+    // AI 加载与匹配（含详细状态反馈）
     // ================================================================
     let pipeline = null;
 
     async function loadAI() {
-        loadingAI.classList.add('show');
+        setStatus('⏳ 正在加载 AI 引擎...', '');
         try {
+            // 第一步：导入模块
+            setStatus('📥 导入 AI 模块...', '');
             const { pipeline: pipelineFn } = await import('@xenova/transformers');
-            pipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-            // 预计算所有答案的向量
+            setStatus('📥 模块导入成功，正在初始化模型...', '');
+
+            // 第二步：加载模型（这里会下载 60-80MB 文件）
+            setStatus('📥 下载 AI 模型 (0%)...', '');
+            pipeline = await pipelineFn('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+                progress_callback: (progress) => {
+                    if (progress.status === 'downloading') {
+                        const pct = Math.round((progress.loaded / progress.total) * 100);
+                        setStatus(`📥 下载模型 (${pct}%)...`, '');
+                    } else if (progress.status === 'ready') {
+                        setStatus('🧠 模型准备就绪，正在生成向量...', '');
+                    }
+                }
+            });
+
+            // 第三步：预计算所有答案的向量
+            setStatus('🧠 生成答案向量 (0%)...', '');
             const embeddings = [];
             for (let i = 0; i < ANSWERS.length; i++) {
                 const result = await pipeline(ANSWERS[i], { pooling: 'mean', normalize: true });
                 embeddings.push(result.data);
                 if (i % 10 === 0) {
-                    loadingAI.querySelector('.text').textContent = `🌊 命运正在苏醒... ${Math.round((i / ANSWERS.length) * 100)}%`;
+                    const pct = Math.round((i / ANSWERS.length) * 100);
+                    setStatus(`🧠 生成向量 (${pct}%)...`, '');
                 }
             }
             state.answerEmbeddings = embeddings;
             state.aiReady = true;
-            loadingAI.classList.remove('show');
-            console.log('✅ AI 已就绪');
+            setStatus('✅ AI 已就绪', 'success');
+            console.log('✅ AI 加载成功');
             return true;
         } catch (err) {
+            const errMsg = err.message || err.toString();
+            setStatus(`❌ 加载失败: ${errMsg.substring(0, 30)}...`, 'error');
             console.error('AI 加载失败:', err);
-            loadingAI.querySelector('.text').textContent = '⚠️ 命运沉睡，使用备用引擎...';
-            setTimeout(() => { loadingAI.classList.remove('show'); }, 1500);
+            // 5秒后提示降级
+            setTimeout(() => {
+                setStatus('⚠️ 使用备用引擎 (同义词匹配)', 'error');
+            }, 3000);
             return false;
         }
     }
@@ -843,7 +847,7 @@
     }
 
     // ================================================================
-    //  核心翻页
+    // 核心翻页（与之前一致）
     // ================================================================
     function performTurn(beforeOpen, afterOpen) {
         if (state.isFlipping) return;
@@ -906,7 +910,7 @@
     }
 
     // ================================================================
-    //  彩蛋
+    // 彩蛋
     // ================================================================
     function triggerEgg() {
         if (state.isEggMode) return;
@@ -997,7 +1001,7 @@
     }
 
     // ================================================================
-    //  心声输入
+    // 心声输入
     // ================================================================
     function openVoiceOverlay() {
         if (state.isEggMode) {
@@ -1182,7 +1186,7 @@
     });
 
     // ================================================================
-    //  主点击
+    // 主点击
     // ================================================================
     document.getElementById('container').addEventListener('click', function(e) {
         if (e.target.closest('#voice-overlay')) return;
@@ -1201,11 +1205,11 @@
     });
 
     // ================================================================
-    //  初始化
+    // 初始化
     // ================================================================
     async function init() {
-        // 显示版本号
         document.getElementById('version').textContent = APP_VERSION;
+        setStatus('⏳ 正在初始化...', '');
 
         state.isFlipping = false;
         state.isBookOpen = false;
@@ -1227,25 +1231,17 @@
 
         book.classList.remove('flipped');
         frontHint.textContent = '✦ 轻触书封，倾诉心声 ✦';
-        statusText.textContent = '沉睡于深海';
         eggFloat.style.opacity = '0';
         eggFloat.style.transform = 'translate(-50%,-50%) scale(0.9)';
 
         updateBackContent('深渊在凝视你', '⛵', 0);
         back.classList.remove('flip');
 
-        // 后台加载 AI
-        loadAI().then(success => {
-            if (success) {
-                console.log('✅ AI 已就绪');
-            } else {
-                console.log('⚠️ AI 加载失败，使用备用同义词引擎');
-            }
-        });
+        // 后台加载 AI，状态会实时显示在底部
+        loadAI();
 
         console.log(`📖 失物之书 ${APP_VERSION} 已加载（共 ${ANSWERS.length} 条答案）`);
         console.log(`🎯 彩蛋将在第 ${state.eggTriggerThreshold} 次翻页时触发`);
-        console.log('💡 点击封面输入心声，AI 将为你匹配最合适的答案');
     }
 
     init();
